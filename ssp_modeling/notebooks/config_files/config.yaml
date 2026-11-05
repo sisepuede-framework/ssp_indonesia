@@ -1,0 +1,6 @@
+country_name: "indonesia"
+country_code: "IDN"
+ssp_input_file_name: "IDN_ssp_input_calibrated_20261105_iter2.csv"
+ssp_transformation_cw: "ssp_indonesia_transformation_cw.xlsx"
+set_lndu_reallocation_factor_to_zero: true
+energy_model_flag: true

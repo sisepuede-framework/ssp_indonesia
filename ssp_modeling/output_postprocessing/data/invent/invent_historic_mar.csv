@@ -1,0 +1,31 @@
+﻿sector,subsector,category,ID,Gas,2010,2012,2014,2016,2018,Code
+1 - Energy,1.A.1 - Energy Industries,1.A.1 - Energy Industries,1.A.1 - Energy Industries:CH4,CH4,0.0086,0.01005,0.0083,0.00785,0.0072,MAR
+1 - Energy,1.A.1 - Energy Industries,1.A.1 - Energy Industries,1.A.1 - Energy Industries:CO2,CO2,17.896,20.686,21.847,21.87383,23.623008,MAR
+1 - Energy,1.A.1 - Energy Industries,1.A.1 - Energy Industries,1.A.1 - Energy Industries:N2O,N2O,0.064666,0.071222,0.083738,0.086718,0.099234,MAR
+1 - Energy,1.A.2 - Manufacturing Industries and Construction,1.A.2 - Manufacturing Industries and Construction,1.A.2 - Manufacturing Industries and Construction:CH4,CH4,0.00865,0.009725,0.008625,0.008175,0.0091,MAR
+1 - Energy,1.A.2 - Manufacturing Industries and Construction,1.A.2 - Manufacturing Industries and Construction,1.A.2 - Manufacturing Industries and Construction:CO2,CO2,7.251,8.399,7.278,6.73597,7.69153,MAR
+1 - Energy,1.A.2 - Manufacturing Industries and Construction,1.A.2 - Manufacturing Industries and Construction,1.A.2 - Manufacturing Industries and Construction:N2O,N2O,0.018178,0.020264,0.01788,0.017284,0.019072,MAR
+1 - Energy,1.A.3 - Transport,1.A.3 - Transport,1.A.3 - Transport:CH4,CH4,0.036525,0.038575,0.0385,0.04495,0.0474,MAR
+1 - Energy,1.A.3 - Transport,1.A.3 - Transport,1.A.3 - Transport:CO2,CO2,13.9466,14.9527,15.67,17.25471,18.412262,MAR
+1 - Energy,1.A.3 - Transport,1.A.3 - Transport,1.A.3 - Transport:N2O,N2O,0.214262,0.229758,0.240784,0.264922,0.282802,MAR
+1 - Energy,1.A.4 - Other Sectors,1.A.4 - Other Sectors,1.A.4 - Other Sectors:CH4,CH4,0.449725,0.4192,0.404525,0.400925,0.3882,MAR
+1 - Energy,1.A.4 - Other Sectors,1.A.4 - Other Sectors,1.A.4 - Other Sectors:CO2,CO2,7.365,8.206,8.797,9.48963,10.06162,MAR
+1 - Energy,1.A.4 - Other Sectors,1.A.4 - Other Sectors,1.A.4 - Other Sectors:N2O,N2O,0.276544,0.293828,0.30843,0.33078,0.350448,MAR
+1 - Energy,1.B - Fugitive emissions from fuels,1.B - Fugitive emissions from fuels,1.B - Fugitive emissions from fuels:CH4,CH4,0.178875,0.1980475,0.208575,0.190225,0.198825,MAR
+1 - Energy,1.B - Fugitive emissions from fuels,1.B - Fugitive emissions from fuels,1.B - Fugitive emissions from fuels:CO2,CO2,0.0006645,0.0005244,0.0004495,0.00042,0.000423,MAR
+2 - Industrial Processes and Product Use,2.A.1 - Cement production,2.A.1 - Cement production,2.A.1 - Cement production:CO2,CO2,5.35923,5.83751,5.17137,5.20489,4.89185,MAR
+2 - Industrial Processes and Product Use,2.A.2 - Lime production,2.A.2 - Lime production,2.A.2 - Lime production:CO2,CO2,0.0615,0.0615,0.0645,0.07315,0.07657,MAR
+2 - Industrial Processes and Product Use,2.A.3 - Glass production,2.A.3 - Glass production,2.A.3 - Glass production:CO2,CO2,0.0185,0.02113,0.02173,0.02234,0.02297,MAR
+2 - Industrial Processes and Product Use,2.C - Metal Industry,2.C - Metal Industry,2.C - Metal Industry:CO2,CO2,0.20613,0.23979,0.23432,0.25545,0.20613,MAR
+2 - Industrial Processes and Product Use,2.F.1 - Refrigeration and Air Conditioning,2.F.1 - Refrigeration and Air Conditioning,2.F.1 - Refrigeration and Air Conditioning:HFCS,HFCS,0.00914,0.02139,0.03761,0.06306,0.10575,MAR
+"3 - Agriculture, Forestry, and Other Land Use",3.A.1 - Enteric Fermentation,3.A.1 - Enteric Fermentation,3.A.1 - Enteric Fermentation:CH4,CH4,7.0409,7.53923,7.60808,7.96486,8.2112,MAR
+"3 - Agriculture, Forestry, and Other Land Use",3.A.2 - Manure Management,3.A.2 - Manure Management,3.A.2 - Manure Management:CH4,CH4,0.94596,1.00477,1.03957,1.07969,1.13182048282825,MAR
+"3 - Agriculture, Forestry, and Other Land Use",3.B.1 - Forest land,3.B.1 - Forest land,3.B.1 - Forest land:CO2,CO2,-2.4456,-2.2966,-2.5001,-2.1972,-2.4834,MAR
+"3 - Agriculture, Forestry, and Other Land Use",3.B.n Forest Land - Removals,3.B.n Forest Land - Removals,3.B.n Forest Land - Removals:CO2,CO2,14.0071407786053,14.0071407786053,14.0071407786053,14.0071407786053,14.0071407786053,MAR
+"3 - Agriculture, Forestry, and Other Land Use",3.C.3 - Urea application,3.C.3 - Urea application,3.C.3 - Urea application:CO2,CO2,0.02821,0.02405,0.03405,0.03405,0.03405,MAR
+"3 - Agriculture, Forestry, and Other Land Use",3.C.4 - Direct N2O Emissions from managed soils,3.C.4 - Direct N2O Emissions from managed soils,3.C.4 - Direct N2O Emissions from managed soils:N2O,N2O,6.96235,7.01736,7.65424,7.4071,8.35912,MAR
+"3 - Agriculture, Forestry, and Other Land Use",3.C.5 - Indirect N2O Emissions from managed soils,3.C.5 - Indirect N2O Emissions from managed soils,3.C.5 - Indirect N2O Emissions from managed soils:N2O,N2O,2.12334,2.1683,2.33376,2.27992,2.52048,MAR
+"3 - Agriculture, Forestry, and Other Land Use",3.C.7 - Rice cultivation,3.C.7 - Rice cultivation,3.C.7 - Rice cultivation:CH4,CH4,0.01306,0.0161,0.00775,0.01323,0.01423,MAR
+4 - Waste,4.A - Solid Waste Disposal,4.A - Solid Waste Disposal,4.A - Solid Waste Disposal:CH4,CH4,7.1916,7.6716,8.184,9.3321,9.993,MAR
+4 - Waste,4.D - Wastewater Treatment and Discharge,4.D - Wastewater Treatment and Discharge,4.D - Wastewater Treatment and Discharge:CH4,CH4,1.6138,1.65791,1.6983,1.7286,1.7556,MAR
+4 - Waste,4.D - Wastewater Treatment and Discharge,4.D - Wastewater Treatment and Discharge,4.D - Wastewater Treatment and Discharge:N2O,N2O,1.6138,1.65791,1.6983,1.7286,1.7556,MAR

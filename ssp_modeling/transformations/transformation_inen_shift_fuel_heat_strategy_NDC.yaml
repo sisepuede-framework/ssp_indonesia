@@ -1,0 +1,23 @@
+citations:
+  - 'SNBC Ch.7.4 p.75: Hydrogen 14.5%, waste-to-energy 11%, electricity 35%, natural gas 10% of industrial energy by 2050'
+  - 'SNBC Table 15 p.158: Industrial fuel switching measures'
+description: >-
+  SNBC Net Zero: 70% of switchable industrial heat demand shifts to clean fuels.
+  Target mix: hydrogen 14.5%, waste-to-energy 11%, electricity 35%, natural gas
+  10%. The frac_switchable of 0.85 represents 85% of thermal demand being
+  eligible for fuel switching. Sigmoid ramp from tp 10 (2025) over 25 periods
+  with alpha 0.6 reflects accelerating fuel infrastructure deployment after 2030.
+identifiers:
+  transformation_code: "TX:INEN:SHIFT_FUEL_HEAT_STRATEGY_NDC"
+  transformation_name: "SNBC Net Zero - INEN: Industrial fuel switching to clean sources"
+parameters:
+  frac_high_given_high: null
+  frac_switchable: 0.85
+  magnitude: 0.70
+  magnitude_type: final_value
+  vec_implementation_ramp:
+    tp_0_ramp: 10
+    n_tp_ramp: 25
+    alpha_logistic: 0.6
+    window_logistic: [-8, 8]
+transformer: "TFR:INEN:SHIFT_FUEL_HEAT"

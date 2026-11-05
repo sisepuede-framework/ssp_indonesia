@@ -1,0 +1,60 @@
+# Indonesia BUR3 national GHG inventory — calibration reference
+# Source: Indonesia Third Biennial Update Report (BUR3), UNFCCC (2022).
+# Units: Mt CO2e (= Gg CO2e / 1000). Gases: 3 (CO2, CH4, N2O).
+# Base year of the SISEPUEDE model: 2015 (time_period 0).
+#
+# NOTE on 2015: it was an El-Nino peat-fire anomaly (national total 2,339.7 Mt),
+# so the calibration anchor defaults to 2019 (latest inventory, full sub-sector
+# split). FOLU 2019 is dominated by peat: decomposition 398.2 + fire 456.4 =
+# 854.6 Mt (92% of FOLU). The model has NO explicit peat variable -> structural gap.
+
+meta:
+  source: "Indonesia BUR3 (UNFCCC, 2022)"
+  anchor_year: 2019
+  base_year_model: 2015
+  units: "Mt CO2e"
+
+# Sub-sector inventory targets at the anchor year (2019), keyed by SISEPUEDE code.
+# null => no clean BUR3 split at sub-sector level -> calibrated via its sector factor.
+subsector_targets_2019:
+  entc: 289.0    # 1A1 Energy Industries (incl. refineries)
+  inen: 136.2    # 1A2 Manufacturing Industries & Construction
+  trns: 157.8    # 1A3 Transport
+  scoe: 33.0     # 1A4 + 1A5 Residential/Commercial/Other/Non-specified
+  fgtv: 20.5     # 1B  Fugitive emissions from fuels
+  ccsq: 0.0      # 1C  CO2 transport & storage
+  ippu: 58.1     # 2   Industrial Processes & Product Use
+  agrc: null     # Agriculture split not reported cleanly -> sector factor
+  lsmm: null
+  lvst: null     # (3A1 Enteric ~ largest, but no full split)
+  soil: null
+  waso: null     # 4A -> sector factor
+  trww: null     # 4D -> sector factor
+  frst: null     # FOLU handled via folu block (sink kept)
+  lndu: null     # FOLU handled via folu block (absorbs peat gap)
+
+sector_targets_2019:
+  Energy: 636.5
+  IPPU: 58.1
+  Agriculture: 105.3
+  FOLU: 924.9
+  Waste: 120.3
+  Total_incl_FOLU: 1845.1
+  Total_excl_FOLU: 920.2
+
+folu_2019:
+  net_total: 924.9
+  peat_decomposition: 398.2
+  peat_fire: 456.4
+  forest_remaining_forest: -355.2
+  structural_gap: true   # no explicit peat variable in SISEPUEDE
+
+# 2015 anomaly year — reference only (not used as anchor by default)
+reference_2015:
+  Total_incl_FOLU: 2339.7
+  FOLU: 1565.6
+
+# NDC BAU projection (BUR3 Table 2), Mt CO2e — for trajectory context only
+ndc_bau:
+  y2010: {Energy: 435, IPPU: 36, Agriculture: 110.51, Forestry: 647, Waste: 88, Total: 1316}
+  y2030: {Energy: 1669, IPPU: 69, Agriculture: 119.66, Forestry: 714, Waste: 296, Total: 2868}

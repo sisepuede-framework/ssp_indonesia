@@ -1,0 +1,9 @@
+matplotlib==3.9.2
+xlsxwriter==3.1.1
+ipykernel==6.29.5
+setuptools>=60,<70
+ruamel.yaml
+polars
+ssp-transformations-handler
+git+https://github.com/jcsyme/sisepuede/
+git+https://github.com/sisepuede-framework/costs_benefits_ssp.git

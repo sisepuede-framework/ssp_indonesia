@@ -1,0 +1,19 @@
+citations:
+  - 'SNBC Ch.7.5, Table 16 -- Regional modal shifts to rail/bus'
+description: >-
+  SNBC Net Zero: Regional modal shift -- 10% aviation and 15% private car trips
+  shifted to intercity rail/bus.
+identifiers:
+  transformation_code: "TX:TRNS:SHIFT_MODE_REGIONAL_STRATEGY_NDC"
+  transformation_name: "SNBC NDC - TRNS: Regional modal shift to rail/bus"
+parameters:
+  dict_categories_out:
+    aviation: 0.1
+    road_light: 0.15
+  dict_categories_target: null
+  vec_implementation_ramp:
+    tp_0_ramp: 10
+    n_tp_ramp: 25
+    alpha_logistic: 0.4
+    window_logistic: [-8, 8]
+transformer: "TFR:TRNS:SHIFT_MODE_REGIONAL"

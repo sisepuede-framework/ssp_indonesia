@@ -1,0 +1,13 @@
+citations:
+description: "Missing"
+identifiers:
+  transformation_code: "TX:SCOE:DEC_DEMAND_HEAT"
+  transformation_name: "Default Value - SCOE: Reduce end-use demand for heat energy
+    by improving building shell"
+parameters:
+  magnitude: 0.5
+  vec_implementation_ramp:
+    tp_0_ramp: 15
+    n_tp_ramp: 20
+    alpha_logistic: 0.0
+transformer: "TFR:SCOE:DEC_DEMAND_HEAT"

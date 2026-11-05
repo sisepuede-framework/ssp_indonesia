@@ -1,0 +1,13 @@
+citations: null
+description: Missing
+identifiers:
+  transformation_code: "TX:SCOE:DEC_DEMAND_HEAT_STRATEGY_LEDS"
+  transformation_name: "Scaled Default Max Parameters by 0.1 - SCOE: Reduce end-use\
+    \ demand for heat energy by improving building shell"
+parameters:
+  magnitude: 0.05
+  vec_implementation_ramp:
+    alpha_logistic: 0.0
+    n_tp_ramp: 20
+    tp_0_ramp: 10
+transformer: "TFR:SCOE:DEC_DEMAND_HEAT"

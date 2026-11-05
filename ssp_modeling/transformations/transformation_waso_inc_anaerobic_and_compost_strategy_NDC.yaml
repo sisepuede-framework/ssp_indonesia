@@ -1,0 +1,18 @@
+citations:
+  - "SNBC Ch.7.8, Table 19 -- 80% organic waste treatment (biogas + compost)"
+description: >-
+  SNBC Net Zero: Increase the fraction of organic waste treated by
+  anaerobic digesters and compost to 80% combined (40% each) by 2050.
+  Sigmoid ramp reflecting gradual organics diversion buildout.
+identifiers:
+  transformation_code: "TX:WASO:INC_ANAEROBIC_AND_COMPOST_STRATEGY_NDC"
+  transformation_name: "SNBC NDC - WASO: 80% organic waste treatment"
+parameters:
+  magnitude_biogas: 0.40
+  magnitude_compost: 0.40
+  vec_implementation_ramp:
+    tp_0_ramp: 10
+    n_tp_ramp: 25
+    alpha_logistic: 0.4
+    window_logistic: [-8, 8]
+transformer: "TFR:WASO:INC_ANAEROBIC_AND_COMPOST"

@@ -1,0 +1,17 @@
+citations:
+  - 'SNBC Ch.7.2 p.70-71, Table 12 -- Coal phase-out by 2040, least-cost electricity optimization'
+description: >-
+  SNBC Net Zero: Enable NemoMod least-cost optimization with coal exit by 2040.
+  Acceleration factor 2.0 for capacity additions.
+identifiers:
+  transformation_code: "TX:ENTC:LEAST_COST_SOLUTION_STRATEGY_NDC"
+  transformation_name: "SNBC Net Zero - ENTC: Least cost solution with coal exit by 2040"
+parameters:
+  acceleration_factor: 2.0
+  drop_frac_elec_increase_for_msp: true
+  vec_implementation_ramp:
+    tp_0_ramp: 7
+    n_tp_ramp: 28
+    alpha_logistic: 0.0
+    window_logistic: [-8, 8]
+transformer: "TFR:ENTC:LEAST_COST_SOLUTION"

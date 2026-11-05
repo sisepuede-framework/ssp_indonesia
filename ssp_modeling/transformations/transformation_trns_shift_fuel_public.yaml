@@ -1,0 +1,15 @@
+citations:
+description: Missing
+identifiers:
+  transformation_code: "TX:TRNS:SHIFT_FUEL_PUBLIC_STRATEGY"
+  transformation_name: "TRNS: Electrify urban public transport"
+parameters:
+  categories:
+  - public
+  dict_allocation_fuels_target: null
+  fuels_source:
+  - fuel_diesel
+  - fuel_gasoline
+  magnitude: 0.7
+  vec_implementation_ramp: null
+transformer: "TFR:TRNS:SHIFT_FUEL_MEDIUM_DUTY"

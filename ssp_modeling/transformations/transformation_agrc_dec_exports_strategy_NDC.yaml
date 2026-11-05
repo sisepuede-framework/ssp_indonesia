@@ -1,0 +1,11 @@
+citations: null
+description: Decrease agricultural exports by 50% (relative to final time period)
+identifiers:
+  transformation_code: "TX:AGRC:DEC_EXPORTS_STRATEGY_NDC"
+  transformation_name: "Scaled Default Max Parameters by 1.8 - AGRC: Decrease Exports"
+parameters:
+  magnitude: 0.9
+  magnitude_type: baseline_scalar
+  vec_implementation_ramp:
+    tp_0_ramp: 10
+transformer: "TFR:AGRC:DEC_EXPORTS"

@@ -1,0 +1,19 @@
+citations:
+  - "SNBC Ch.7.6 p.79, Table 17 -- 2.4M ha no-till, zero residue burning"
+description: >-
+  SNBC Net Zero: Expand conservation agriculture. Eliminate residue burning,
+  retain 50% of crop residues. 2.4 million ha no-till farming.
+identifiers:
+  transformation_code: "TX:AGRC:INC_CONSERVATION_AGRICULTURE_STRATEGY_NDC"
+  transformation_name: "SNBC NDC - AGRC: Conservation agriculture"
+parameters:
+  dict_categories_to_magnitude: null
+  magnitude_burned: 0.0
+  magnitude_removed: 0.5
+  return_dict_magnitude: false
+  vec_implementation_ramp:
+    tp_0_ramp: 10
+    n_tp_ramp: 25
+    alpha_logistic: 0.0
+    window_logistic: [-8, 8]
+transformer: "TFR:AGRC:INC_CONSERVATION_AGRICULTURE"

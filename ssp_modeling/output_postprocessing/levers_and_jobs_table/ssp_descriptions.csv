@@ -1,0 +1,75 @@
+transformation_code,transformation_description_long
+AGRC:DEC_CH4_RICE,"Many practices can reduce emissions associated with growing rice, including improved water management, fertilizer practices, tillage practices, rice variety choices, residue management, and seeding practices. This transformation represents a percentage reduction in the rice CH4 emission factor."
+AGRC:DEC_EXPORTS,Decrease agricultural exports by some percentage (default 50%) by final time period. 
+AGRC:DEC_LOSSES_SUPPLY_CHAIN,"Reduce waste food waste in the agricultural (crop) supply chain (pre-consumer). This transformation reduces the baseline loss, which reduces the demand for crops produced in the region. "
+AGRC:INC_CONSERVATION_AGRICULTURE,"Conservation agriculture is the term given to agricultural practices that seek to preserve soil and ecosystem health. FAO describes three inter-related practices: minimum tilling, maintaining permanent soil cover, and diversifying plant species. In SISEPUEDE, this transformation increases the fraction of crops that are no-till while also increasing crop residues that are left on the field. "
+AGRC:INC_PRODUCTIVITY,Apply a fractional increase to crop yield factors per ha. 
+CCSQ:INC_CAPTURE,Increase Direct Air Capture deployment to 50 MT CO2e by 2050. 
+ENTC:DEC_LOSSES,"Decrease transmission losses by upgrading electrical transmission infrastructure. This transformation sets a target maximum grid transmission loss by 2050. The transformation only reduces transmission loss; if a region has a lower transmission loss, it will remain. The average grid transmission loss is used to estimate production demands for electricity."
+ENTC:TARGET_CLEAN_HYDROGEN,"Set a target fraction of hydrogen production that comes from green hydrogen, or electrolysis. "
+ENTC:TARGET_RENEWABLE_ELEC,"Set a target for production of electricity from renewable sources (can be defined by user), which, by default, can include geothermal, hydropower, ocean, solar, and tidal. Includes minimum targets for specific renewable energy technologies, such as solar, wind, and geothermal."
+FGTV:DEC_LEAKS,"Reduces the CH4 emission factor from the production, distribution, and transmission of fuels in coal, natural gas, and oil production. "
+FGTV:INC_FLARE,"Increases flaring at orphan wells and mining facilities that vent methane. Flaring converts CH4 to CO2, a much less potent greenhouse gas."
+FRST:INCREASE_SEQUESTRATION,Increases annual sequestration in forests 
+INEN:INC_EFFICIENCY_ENERGY,Industrial energy demands are driven by both production demands and efficiency. This transformation increases the average efficiency of industrial production processes (by fuel) to reduce energy demands.
+INEN:INC_EFFICIENCY_PRODUCTION,Industrial energy demands are driven by both production demands and efficiency. This transformation reduces the end-use energy demand through changes in production processes.
+INEN:SHIFT_FUEL_HEAT,"Fuel switch industrial low and high heat processes to target fuels. By default, low heat is electrified, while fuels for high heat are partially electrified and partially replaced with hydrogen. Transformations for both (and/or) low and high-heat should be implemented using this transformer. "
+IPPU:DEC_CLINKER,"Reduces use of clinker in cement production in favor of other processes, such as the use of supplementary cementitious materials (SCMs), producing limestone calcined clay cement (LC3), or other processes."
+IPPU:DEC_DEMAND,Reduce industrial production. Can be industry specific. 
+IPPU:DEC_HFCS,"Reduce IPPU emission factors associated with gasses classified as hydrofluorocarbons (HFCs), which are the byproduct of some industrial processes."
+IPPU:DEC_N2O,"Reduce IPPU emission factors associated with N2O, which is the byproduct of some industrial processes."
+IPPU:DEC_OTHER_FCS,"Reduce IPPU emission factors associated with gasses classified as other fluorinated compounds, which are the byproduct of some industrial processes; includes SF6, NF3, HCFCs, and others."
+IPPU:DEC_PFCS,"Reduce IPPU emission factors associated with gasses classified as perfluorinated carbons (PFCs), which are the byproduct of some industrial processes."
+LNDU:BOUND_CLASSES,"This transformation guarantees a minimum amount of land stays protected (like forests or parks) or place limits on how much land can be converted (such as farmland or cities) In this way, it helps ensure land use follows conservation and sustainability goals."
+LNDU:DEC_CLASS_LOSS,"This transformation stops the loss of a chosen land use class by increasing the likelihood that land stays in that class. Unlike the broader deforestation rule, which blocks several classes from changing, this rule targets just one class to ensure it remains stable over time"
+LNDU:DEC_DEFORESTATION,Halt deforestation of primary and secondary forests; sets the transition probabilities out of these land use classes to near 0.
+LNDU:INC_REFORESTATION,Increases probability of input land use classes being converted to secondary forest. The percentage entered represents the desired fractional increase in the area of forest due to reforestation.
+LNDU:INC_SILVOPASTURE,"Increase the use of silvopasture; modeled by shifting 30% of pasture (in final time period) to secondary forests over time; livestock carrying capacities increase to meet the change, while pasture fractions of grassland decrease."
+LSMM:INC_CAPTURE_BIOGAS,Increase the fraction of biogas that is captured at manure treated at anaerobic livestock manure treatment facilities
+LSMM:INC_MANAGEMENT_CATTLE_PIGS," | 95% of manure from cattle (dairy and non-dairy) and pigs is treated. Under default conditions, the manure treated is sent to the following pathways:
+ |    37.5% to Anaerobic Digestion
+ |    12.5% to Composting
+ |    25.0% to Daily Spread
+ |    12.5% to Deep Bedding
+ |    12.5% to Solid Storage"
+LSMM:INC_MANAGEMENT_OTHER," | 95% of manure from all other (sheep, goats, horses, buffalo) animals is treated. The manure treated is sent to the following pathways:
+ |    37.5.% to Composting
+ |    12.5% to Dry Lot
+ |    25.0% to Daily Spread
+ |    25.0% to Solid Storage"
+LSMM:INC_MANAGEMENT_POULTRY," | 95% of manure from poultry (chickens) and pigs is treated. The manure treated is sent to the following pathways:
+ |    100% to Poultry Management"
+LVST:DEC_ENTERIC_FERMENTATION,"Reduce the CH4 enteric fermentation factor (per head of livestock) from ruminant livestock. Several interventions can potentially help achieve this transformation, including feed switching and methagenic vaccines."
+LVST:DEC_EXPORTS,Decrease expected exports of livestock and livestock products.
+LVST:INC_PRODUCTIVITY,Increase livestock carrying capacity (also known as average land productivity) by some fraction.
+PFLO:INC_HEALTHIER_DIETS,"Reduces the average per-person demand for cattle by the fraction specified. Furthermore, allows for changes to certain crop demands, such as sugarcane."
+PFLO:INC_IND_CCS,Increase carbon capture and sequestration in industry (excluding energy production industry). Defaults to an 80% prevalence with 90% efficacy (all can be modified). 
+SCOE:DEC_DEMAND_HEAT,"Reduce end-use demand for heat energy by improving building shell--can include interventions such as retrofitting, smart thermostats, and more. "
+SCOE:INC_EFFICIENCY_APPLIANCE,Reduce demand for electricity in buildings by increasing the efficiency of electrified building energy.
+SCOE:INC_EFFICIENCY_HEAT,Increases heat efficiency 
+SCOE:SHIFT_FUEL_HEAT,"Heating energy in buildings can be electrified; for example, heating can be performed using heat pumps and cooking can be electrified."
+SOIL:DEC_LIME_APPLIED,Decrease lime applied to soils (default 5%)
+SOIL:DEC_N_APPLIED,Decrease total nitrogen applied through more precise fertilizer use (default 5%) without decreasing yields
+TRDE:DEC_DEMAND,Demand for public and private transportation can be reduced through mechanisms like urban planning or congestion pricing. 
+TRNS:INC_EFFICIENCY_ELECTRIC,Vehicle efficiency can be improved over time through regulation and technological investment. This transformation increases the efficiency of electric vehicles  and is specified as a fractional increase in the efficiency against the final time period. 
+TRNS:INC_EFFICIENCY_NON_ELECTRIC,Vehicle efficiency can be improved over time through regulation and technological investment. This transformation increases the efficiency of non-electric vehicles (including fossil-fuel ICEs and other fuel sources) and is specified as a fractional increase in the efficiency against the final time period. 
+TRNS:INC_OCCUPANCY_LIGHT_DUTY,The occupancy rate of private vehicles can be increased through mechanisms like implementing carpool lanes or incentive programs for carpooling. This transformation is specified as a fractional increase in the average occupancy rate of private vehicles.  
+TRNS:SHIFT_FUEL_LIGHT_DUTY,"Light-duty transportation (including private cars and trucks, `road_light` category) can be electrified. This transformation allows for the specification of a target fraction of light duty vehicles fueled by electricity. Baseline are shifted out proportionally to their baseline prevalence. "
+TRNS:SHIFT_FUEL_MARITIME,Maritime transportation (including boats and ships) can be shifted away from fossil fuels. This transformation allows for the specification of a target fraction of maritime transportation demand that is shifted to hydrogen; the rest is electrified (note that this can be adjusted). Baseline are shifted out proportionally to their baseline prevalence. 
+TRNS:SHIFT_FUEL_MEDIUM_DUTY,"Medium-duty transportation (including `road_heavy_freight`, `road_heavy_regional`, and `public` categories) can be shifted away from fossil fuels. This transformation allows for the specification of a target fraction of medium duty vehicles fueled by electricity; the rest are shifted to hydrogen (note that this can be adjusted). Baseline are shifted out proportionally to their baseline prevalence. "
+TRNS:SHIFT_FUEL_RAIL,Rail (including `rail_freight` and `rail_passenger` categories) can be electrified. This transformation allows for the specification of a target fraction of rail fueled by electricity. Baseline are shifted out proportionally to their baseline prevalence. 
+TRNS:SHIFT_MODE_FREIGHT,"The modes by which freight is transported can be shifted. This transformation allows for the transportation that meets freight demand to be rearranged. By default, shifts 20% of aviation and road freight demand to freight rail."
+TRNS:SHIFT_MODE_PASSENGER,"The modes by which passengers are transported can be shifted. This transformation allows for the transportation that meets day-to-day demand to be rearranged. By default, shifts 30% (X) of passenger road demand to human powered (17% of X), powered bikes (33%), and public (50%)."
+TRNS:SHIFT_MODE_REGIONAL,"The modes by which regional transportation demands are met can be shifted. This transformation allows for the transportation that meets regional passenger demand to be rearranged. By default, shifts 10% of passenger aviation and 20% of light-duty road demand to heavy-duty road transport."
+TRWW:INC_CAPTURE_BIOGAS,Increases capture of biogas at secondary and tertiary anaerobic wastewater treatment facilities. 
+TRWW:INC_COMPLIANCE_SEPTIC,"Septic tanks help reduce emissions and improve health outcomes in rural areas. However, compliance in pumping schedule and maintenance are required to maintain full  benefits. This transformation increases the compliance of septic tanks."
+WALI:INC_TREATMENT_INDUSTRIAL,"Industrial wastewater treatment is shifted so that a minimum of 80% is treated in advanced anaerobic facilities, 10% is in secondary anaerobic facilities, and 10% is in secondary aerobic facilities."
+WALI:INC_TREATMENT_RURAL,Rural wastewater treatment is shifted so that 100% of rural wastewater is treated in septic tanks. 
+WALI:INC_TREATMENT_URBAN,"Industrial wastewater treatment is shifted so that a minimum of 30% is treated in advanced anaerobic facilities, 30% is treated in advanced aerobic facilities, 20% is in secondary anaerobic facilities, and 20% is in secondary aerobic facilities."
+WASO:DEC_CONSUMER_FOOD_WASTE,Reduce the amount of food waste generated per capita.
+WASO:INC_ANAEROBIC_AND_COMPOST,"Increase the fraction of yard, food, and sludge waste that is treated by anaerobic digesters or compost. Defaults to 47.5% in anaerobic digestion facilities and 47.5% in compost facilities."
+WASO:INC_CAPTURE_BIOGAS,Increase fraction of biogas captured from landfills and anaerobic digesters
+WASO:INC_ENERGY_FROM_BIOGAS,Increase the fraction of biogas that is collected that is used for energy
+WASO:INC_ENERGY_FROM_INCINERATION,Solid waste can be incinerated and used for energy; this transformation specifies the target fraction of solid waste that is incinerated that is used for energy.
+WASO:INC_LANDFILLING,"Increase fraction of waste that is otherwise not recycled, composted, or digested that is sent to landfills"
+WASO:INC_RECYCLING,Recycling can reduce emissions by reducing anaerobic decomposition in landfills and reducing the need for virgin production of materials. This transformation increases the fraction of recyclable waste that is recycled.

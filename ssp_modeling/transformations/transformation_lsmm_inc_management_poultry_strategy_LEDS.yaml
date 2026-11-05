@@ -1,0 +1,19 @@
+citations:
+description: " | 95% of manure from poultry (chickens) and pigs is treated. The manure
+  treated is sent to the following pathways:\r\n |    100% to Poultry Management"
+identifiers:
+  transformation_code: "TX:LSMM:INC_MANAGEMENT_POULTRY_STRATEGY_LEDS"
+  transformation_name: "Scaled Default Max Parameters by 1.0 - LSMM: Improve manure
+    management for poultry"
+parameters:
+  dict_lsmm_pathways:
+  return_pathways: false
+  vec_cats_lvst:
+  vec_implementation_ramp:
+    tp_0_ramp: 8
+    n_tp_ramp: 25
+    alpha_logistic: 0.3
+    window_logistic:
+    - -8
+    - 8
+transformer: "TFR:LSMM:INC_MANAGEMENT_POULTRY"
