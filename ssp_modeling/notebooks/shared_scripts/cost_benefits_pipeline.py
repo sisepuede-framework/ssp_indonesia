@@ -12,20 +12,29 @@ import pandas as pd
 from pathlib import Path
 from typing import Optional
 
-from costs_benefits_ssp.cb_calculate import CostBenefits
-
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _resolve_base_code(strategy_code_base: str, att_strategy: pd.DataFrame) -> str:
-    """Return *strategy_code_base* if it exists in att_strategy, else 'BASE'."""
-    if strategy_code_base in att_strategy["strategy_code"].values:
+def _resolve_base_code(
+    strategy_code_base: str,
+    att_primary: pd.DataFrame,
+    att_strategy: pd.DataFrame,
+) -> str:
+    """Return *strategy_code_base* if it was actually run, else 'BASE'.
+
+    Checks presence among the strategies in this run (att_primary), not just
+    the full catalog (att_strategy): a code like 'PFLO:BAU' can be defined but
+    never computed, which would crash the CostBenefits engine downstream.
+    """
+    code_to_sid = dict(zip(att_strategy["strategy_code"], att_strategy["strategy_id"]))
+    run_sids = set(att_primary["strategy_id"])
+    if code_to_sid.get(strategy_code_base) in run_sids:
         return strategy_code_base
     fallback = "BASE"
     print(
-        f"[cb_pipeline] '{strategy_code_base}' not found in ATTRIBUTE_STRATEGY — "
+        f"[cb_pipeline] '{strategy_code_base}' not present in this run's strategies — "
         f"falling back to '{fallback}'."
     )
     return fallback
@@ -144,7 +153,8 @@ def run_cost_benefits(
 
     Parameters
     ----------
-    df_decomposed      : wide-format decomposed SSP output (from run_decomposition)
+    df_decomposed      : wide-format SSP model output (raw WIDE_INPUTS_OUTPUTS,
+                         region-filtered; no rescaling needed for costs)
     att_primary        : ATTRIBUTE_PRIMARY table as DataFrame
     att_strategy       : ATTRIBUTE_STRATEGY table as DataFrame
     cb_config_path     : path to cb_config_params.xlsx
@@ -157,10 +167,12 @@ def run_cost_benefits(
     -------
     pd.DataFrame  Tableau-ready cost-benefit results
     """
+    from costs_benefits_ssp.cb_calculate import CostBenefits
+
     cb_config_path = Path(cb_config_path)
 
-    # Resolve base strategy (fall back to BASE if specified code is absent)
-    base_code = _resolve_base_code(strategy_code_base, att_strategy)
+    # Resolve base strategy (fall back to BASE if the code was not run)
+    base_code = _resolve_base_code(strategy_code_base, att_primary, att_strategy)
 
     # Build dynamic strategy → id maps
     strategy_id_map, primary_id_map = _build_strategy_maps(att_primary, att_strategy)
@@ -195,3 +207,21 @@ def run_cost_benefits(
         print(f"[cb_pipeline] Saved {len(cb_data):,} rows → {output_path}")
 
     return cb_data
+
+
+def _selfcheck() -> None:
+    """Base-code resolution: a code that was run resolves to itself; a code
+    defined in the catalog but absent from the run falls back to BASE."""
+    att_strategy = pd.DataFrame({
+        "strategy_code": ["BASE", "PFLO:BAU", "PFLO:ALL"],
+        "strategy_id":   [0, 5000, 6002],
+    })
+    att_primary = pd.DataFrame({"primary_id": [0, 71071], "strategy_id": [0, 6002]})
+    assert _resolve_base_code("PFLO:ALL", att_primary, att_strategy) == "PFLO:ALL"
+    assert _resolve_base_code("PFLO:BAU", att_primary, att_strategy) == "BASE"  # defined, not run
+    assert _resolve_base_code("NOPE", att_primary, att_strategy) == "BASE"      # unknown
+    print("cost_benefits_pipeline self-check OK")
+
+
+if __name__ == "__main__":
+    _selfcheck()

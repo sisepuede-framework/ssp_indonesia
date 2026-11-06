@@ -1,12 +1,10 @@
 """
 tableau_postprocessing.py
 -------------------------
-Python port of the R post-processing pipeline that produces Tableau-ready
-CSVs from a SISEPUEDE run output, adapted for Morocco. Replaces:
-
-  - ssp_modeling/output_postprocessing/scr/data_prep_new_mapping.r
-  - ssp_modeling/output_postprocessing/scr/data_prep_drivers.r
-  - ssp_modeling/output_postprocessing/levers_and_jobs_table/* (levers + jobs tables)
+Produces the four Tableau-ready CSVs (emissions, drivers, levers, jobs) directly
+from a SISEPUEDE run output. Reads the raw WIDE_INPUTS_OUTPUTS.csv — NO rescaling
+(intertemporal decomposition) and NO historical-inventory overlay. Supersedes the
+Morocco R scripts under ssp_modeling/output_postprocessing/scr/.
 
 Usage from a manager notebook:
 
@@ -15,39 +13,58 @@ Usage from a manager notebook:
     run_tableau_postprocessing(
         run_dir         = RUN_ID_OUTPUT_DIR_PATH,
         project_dir     = PROJECT_DIR,
-        region          = "morocco",
-        iso_code3       = "MAR",
-        year_ref        = 2018,
+        region          = "indonesia",
+        iso_code3       = "IDN",
+        year_ref        = 2019,          # BUR3 anchor year
     )
 
 Outputs land in `<project_dir>/ssp_modeling/tableau/data/`:
-  - decomposed_emissions_<region>_<year_ref>.csv   (HP-smoothed, historical + SISEPUEDE)
-  - drivers_<region>.csv                            (driver variables + GDP history)
-  - tableau_levers_table_complete.csv               (levers + stakeholder merge)
-  - jobs_demand_<region>.csv                        (employment subset)
+  - emissions_<region>.csv              (SISEPUEDE projection mapped to IPCC taxonomy)
+  - drivers_<region>.csv                (driver variables + GDP history)
+  - tableau_levers_table_complete.csv   (levers + stakeholder merge)
+  - jobs_demand_<region>.csv            (employment subset; needs <ISO> rows)
+
+The emissions table is projection-only: it maps the model's co2e_* columns into the
+IPCC crosswalk classes. To overlay a national inventory later, re-add a historical
+merge against an invent_historic_<iso>.csv.
 """
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import Iterable
 
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.filters.hp_filter import hpfilter
 
 
 # ---------------------------------------------------------------------------
-# HP filter (port of R hp_filter_subsec)
+# HP filter (port of R hp_filter_subsec; numpy-only, no statsmodels dependency)
 # ---------------------------------------------------------------------------
+
+def _hp_trend(values: np.ndarray, lambda_hp: float) -> np.ndarray:
+    """Hodrick-Prescott trend: solve (I + lambda * D'D) tau = y.
+
+    D is the (n-2) x n second-difference operator. Matches statsmodels'
+    hpfilter trend to machine precision, using only numpy.
+    """
+    y = np.asarray(values, dtype=float)
+    n = y.size
+    if n < 3:
+        return y.copy()
+    d = np.zeros((n - 2, n))
+    idx = np.arange(n - 2)
+    d[idx, idx] = 1.0
+    d[idx, idx + 1] = -2.0
+    d[idx, idx + 2] = 1.0
+    return np.linalg.solve(np.eye(n) + lambda_hp * (d.T @ d), y)
+
 
 def _hp_smooth_series(values: np.ndarray, lambda_hp: float) -> np.ndarray:
     """Anchored, non-negative HP trend matching the R hp_filter_subsec output."""
     if len(values) < 2:
         return values.copy()
-    _, trend = hpfilter(values.astype(float), lamb=lambda_hp)
-    sm = np.maximum(trend, 0.0)
+    sm = np.maximum(_hp_trend(values, lambda_hp), 0.0)
     sm = np.maximum(sm + (values[0] - sm[0]), 0.0)
     sm[0] = values[0]
     return sm
@@ -108,17 +125,17 @@ def _apply_hp_to_subsec_gas(
     return df
 
 
-# HP smoothing schedule tuned for Morocco's IPCC subsector naming.
+# HP smoothing schedule. Labels match the IPCC subsectors in crosswalk_ssp.csv.
+# Purely cosmetic: smooths noisy projected trajectories for the listed
+# (subsector, gas) pairs. No-op for any label/gas not present in the data.
+# Disable entirely by passing hp_cutoff_year=None (or hp_schedule=[]).
 # Format: (subsector_label, [gases], lambda_hp)
 HP_SCHEDULE = [
-
     ("3.A.1 - Enteric Fermentation",                       ["CH4"], 200),
     ("3.A.2 - Manure Management",                          ["CH4"], 200),
     ("3.C.4 - Direct N2O Emissions from managed soils",    ["N2O"], 200),
-    
-    ("4.A.1 - Managed Waste Disposal Sites",               ["CH4"], 400),
-    ("4.A.2 - Unmanaged Waste Disposal Sites",             ["CH4"], 400),
-    ("4.D.1 - Domestic Wastewater",                        ["CH4"], 400),
+    ("4.A - Solid Waste Disposal",                         ["CH4"], 400),
+    ("4.D - Wastewater Treatment and Discharge",           ["CH4"], 400),
 ]
 
 
@@ -128,19 +145,27 @@ HP_SCHEDULE = [
 
 def build_emissions_table(
     run_dir: Path,
-    targets_path: Path,
-    edgar_path: Path,
+    crosswalk_path: Path,
+    wide_path: Path,
     iso_code3: str,
     region: str,
     year_ref: int,
     out_path: Path,
     hp_schedule: Iterable[tuple] = HP_SCHEDULE,
     hp_cutoff_year: int | None = 2025,
+    start_year: int | None = None,
 ) -> pd.DataFrame:
-    """Port of data_prep_new_mapping.r."""
+    """SISEPUEDE projected emissions mapped to the IPCC crosswalk taxonomy.
 
-    # 1 — load mapping
-    mapping = pd.read_csv(targets_path)
+    Projection only: reads the raw WIDE_INPUTS_OUTPUTS.csv (no rescaling) and
+    does NOT overlay a national inventory. `start_year` trims the output to
+    years >= start_year (defaults to `year_ref`).
+    """
+    if start_year is None:
+        start_year = year_ref
+
+    # 1 — load crosswalk (co2e_* vars -> inventory class)
+    mapping = pd.read_csv(crosswalk_path)
     mapping = mapping.drop(columns=[c for c in ("id", "ids", iso_code3) if c in mapping.columns])
     mapping = mapping.reset_index().rename(columns={"index": "_row"})
     mapping["ids"] = (
@@ -149,17 +174,12 @@ def build_emissions_table(
         + "_" + mapping["gas"].astype(str)
     )
 
-    # 2 — load historical inventory, filter to country
-    edgar = pd.read_csv(edgar_path)
-    edgar = edgar[edgar["Code"] == iso_code3].copy()
-    edgar["ID"] = edgar["subsector"].astype(str) + ":" + edgar["Gas"].astype(str)
-
-    # 3 — load decomposed_ssp_output, filter to region, sort
-    data = pd.read_csv(run_dir / "decomposed_ssp_output.csv")
+    # 2 — load raw model output, filter to region, sort
+    data = pd.read_csv(wide_path)
     data = data[data["region"] == region].copy()
     data = data.sort_values(["primary_id", "time_period", "region"]).reset_index(drop=True)
 
-    # 4 — build mapped (rowSum) columns according to mapping$vars (colon-separated)
+    # 3 — build mapped (rowSum) columns according to crosswalk vars (colon-separated)
     id_vars = ["region", "time_period", "primary_id"]
     data_cols = set(data.columns)
 
@@ -175,16 +195,16 @@ def build_emissions_table(
 
     data_new = data[id_vars + mapping["ids"].tolist()].copy()
 
-    # 5 — wide → long
+    # 4 — wide → long
     data_new = data_new.melt(id_vars=id_vars, var_name="ids", value_name="value")
 
-    # 6 — merge with mapping; rename CSC sector/subsector
+    # 5 — merge with crosswalk; rename sector/subsector
     map_keep = mapping.drop(columns=["vars"]).rename(
         columns={"sector": "CSC.Sector", "subsector": "CSC.Subsector"}
     )
     data_new = data_new.merge(map_keep, on="ids", how="left")
 
-    # 7 — aggregate to inventory level
+    # 6 — aggregate to inventory level
     data_new = (
         data_new.groupby(
             ["primary_id", "time_period", "ID", "CSC.Sector", "CSC.Subsector"],
@@ -198,60 +218,41 @@ def build_emissions_table(
     data_new["Year"] = data_new["time_period"] + 2015
     data_new["Gas"] = data_new["ID"].astype(str).str.split(":").str[1]
 
-    # 8 — merge with primary + strategy attributes
+    # 7 — merge with primary + strategy attributes
     att_primary = pd.read_csv(run_dir / "ATTRIBUTE_PRIMARY.csv")
     data_new = data_new.merge(att_primary, on="primary_id", how="left")
 
     att_strategy = pd.read_csv(run_dir / "ATTRIBUTE_STRATEGY.csv")[["strategy_id", "strategy"]]
     data_new = data_new.merge(att_strategy, on="strategy_id", how="left")
 
-    # 9 — melt historic inventory wide to long
-    id_vars_edgar = ["Code", "sector", "subsector", "Gas", "ID"]
-    measure_cols = [c for c in edgar.columns if re.fullmatch(r"X?\d{4}", str(c))]
-    edgar_long = edgar.melt(
-        id_vars=id_vars_edgar,
-        value_vars=measure_cols,
-        var_name="variable",
-        value_name="value",
-    )
-    edgar_long["Year"] = edgar_long["variable"].astype(str).str.lstrip("X").astype(int)
-    edgar_long = edgar_long.drop(columns=["variable"])
-    edgar_long["strategy_id"] = np.nan
-    edgar_long["primary_id"]  = np.nan
-    edgar_long["design_id"]   = np.nan
-    edgar_long["future_id"]   = np.nan
-    edgar_long["Contry"]      = region
-    edgar_long["strategy"]    = "Historical"
-    edgar_long["source"]      = "NIR"
-
-    # 10 — prepare data_new for rbind
+    # 8 — tag + keep projection from start_year onward
     data_new = data_new.drop(columns=["time_period"])
     data_new["Code"]   = iso_code3
     data_new["Contry"] = region
     data_new["source"] = "SISEPUEDE"
-    edgar_max_year = int(edgar_long["Year"].max())
-    data_new = data_new[data_new["Year"] >= edgar_max_year].copy()
-
-    combined = pd.concat([data_new, edgar_long], ignore_index=True, sort=False)
-    combined = combined.sort_values(
+    data_new = data_new[data_new["Year"] >= start_year].copy()
+    data_new = data_new.sort_values(
         ["strategy_id", "sector", "subsector", "Gas", "Year"], na_position="last"
     ).reset_index(drop=True)
 
-    # 11 — HP filter
-    combined["value_hp"] = np.nan
-    for subsec, gases, lam in hp_schedule:
-        combined = _apply_hp_to_subsec_gas(
-            combined, subsec, gases, lam, cutoff_year=hp_cutoff_year,
-        )
+    # 9 — HP smoothing (cosmetic; preserves true pre-smoothing values in value_original)
+    value_original = data_new["value"].astype(float).to_numpy(copy=True)
+    data_new["value_hp"] = np.nan
+    if hp_schedule and hp_cutoff_year is not None:
+        for subsec, gases, lam in hp_schedule:
+            data_new = _apply_hp_to_subsec_gas(
+                data_new, subsec, gases, lam, cutoff_year=hp_cutoff_year,
+            )
+    data_new["value_original"] = value_original
 
-    # 12 — write CSV with the column order expected by Tableau
+    # 10 — write CSV with the column order expected by Tableau
     final_cols = [
         "strategy_id", "primary_id", "ID", "sector", "subsector", "value",
         "Year", "Gas", "design_id", "future_id", "strategy", "Code",
         "Contry", "source", "value_original", "value_hp",
     ]
-    final_cols = [c for c in final_cols if c in combined.columns]
-    out = combined[final_cols].copy()
+    final_cols = [c for c in final_cols if c in data_new.columns]
+    out = data_new[final_cols].copy()
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(out_path, index=False)
@@ -272,9 +273,10 @@ def build_drivers_table(
     year_ref: int,
     out_path: Path,
 ) -> pd.DataFrame:
-    """Port of data_prep_drivers.r."""
+    """Port of data_prep_drivers.r (reads the raw WIDE output, no rescaling)."""
 
-    data = pd.read_csv(run_dir / "decomposed_ssp_output.csv")
+    data = pd.read_csv(wide_inputs_outputs_path)
+    data = data[data["region"] == region].copy()
     id_vars = ["region", "time_period", "primary_id"]
     measure_cols = [c for c in data.columns if c not in id_vars]
     long_df = data.melt(id_vars=id_vars, value_vars=measure_cols,
@@ -456,25 +458,25 @@ def run_tableau_postprocessing(
     drivers_taxonomy_filename: str = "driver_variables_taxonomy_20251013.csv",
     levers_filename: str | None = None,
 ) -> dict:
-    """Generate every Tableau-ready CSV in one call (Morocco-adapted).
+    """Generate every Tableau-ready CSV in one call (no rescaling).
 
     Parameters
     ----------
-    run_dir : run output directory (must contain decomposed_ssp_output.csv,
-        ATTRIBUTE_PRIMARY.csv, ATTRIBUTE_STRATEGY.csv,
-        levers_implementation_<region>.csv, and the WIDE_INPUTS_OUTPUTS.csv).
+    run_dir : run output directory (must contain ATTRIBUTE_PRIMARY.csv,
+        ATTRIBUTE_STRATEGY.csv, levers_implementation_<region>.csv, and the
+        WIDE_INPUTS_OUTPUTS.csv). No decomposed_ssp_output.csv is needed.
     project_dir : repo root.
-    region : region label inside the model output, e.g. "morocco".
-    iso_code3 : ISO 3-letter country code, e.g. "MAR".
-    year_ref : reference / calibration year (e.g. 2018).
+    region : region label inside the model output, e.g. "indonesia".
+    iso_code3 : ISO 3-letter country code, e.g. "IDN".
+    year_ref : reference year; trims emissions/drivers to years >= it (e.g. 2019).
     wide_inputs_outputs_filename : explicit filename of the WIDE_INPUTS_OUTPUTS
         file inside run_dir; if None, auto-detected.
     out_dir : where to write the Tableau CSVs (defaults to
         <project_dir>/ssp_modeling/tableau/data).
-    hp_cutoff_year : first year where HP smoothing kicks in (default 2025).
+    hp_cutoff_year : first year where HP smoothing kicks in (default 2025);
+        pass None to disable the emissions smoothing entirely.
     drivers_taxonomy_filename : filename of the drivers taxonomy file under
-        output_postprocessing/data/ (Morocco currently has
-        driver_variables_taxonomy_20240117.csv).
+        output_postprocessing/data/.
     levers_filename : explicit name for the levers implementation CSV
         (default: levers_implementation_<region>.csv).
     """
@@ -495,8 +497,7 @@ def run_tableau_postprocessing(
     pp_data = pp_root / "data"
     levers_dir = pp_root / "levers_and_jobs_table"
 
-    targets_path           = pp_data / "invent" / f"emission_targets_{iso_code3.lower()}_{year_ref}.csv"
-    edgar_path             = pp_data / "invent" / f"invent_historic_{iso_code3.lower()}.csv"
+    crosswalk_path         = pp_data / "invent" / "crosswalk_ssp.csv"
     drivers_taxonomy_path  = pp_data / drivers_taxonomy_filename
     descriptions_path      = levers_dir / "ssp_descriptions.csv"
     stakeholder_codes_path = levers_dir / "stakeholder_codes.csv"
@@ -506,12 +507,12 @@ def run_tableau_postprocessing(
 
     emissions = build_emissions_table(
         run_dir        = run_dir,
-        targets_path   = targets_path,
-        edgar_path     = edgar_path,
+        crosswalk_path = crosswalk_path,
+        wide_path      = wide_path,
         iso_code3      = iso_code3,
         region         = region,
         year_ref       = year_ref,
-        out_path       = out_dir / f"decomposed_emissions_{region}_{year_ref}.csv",
+        out_path       = out_dir / f"emissions_{region}.csv",
         hp_cutoff_year = hp_cutoff_year,
     )
     drivers = build_drivers_table(
@@ -542,3 +543,19 @@ def run_tableau_postprocessing(
         "levers":    levers,
         "jobs":      jobs,
     }
+
+
+def _selfcheck() -> None:
+    """HP trend sanity: a straight line is its own trend; smoothing stays
+    non-negative and anchored to the first value."""
+    line = np.arange(10, 20, dtype=float)
+    assert np.allclose(_hp_trend(line, 1600), line, atol=1e-6), "HP trend must preserve a line"
+    noisy = np.array([5.0, 9.0, 2.0, 11.0, 3.0, 10.0])
+    sm = _hp_smooth_series(noisy, 100)
+    assert (sm >= 0).all(), "smoothed series must be non-negative"
+    assert sm[0] == noisy[0], "smoothed series must anchor to the first value"
+    print("tableau_postprocessing self-check OK")
+
+
+if __name__ == "__main__":
+    _selfcheck()

@@ -14,7 +14,7 @@ SSP_PATH = pathlib.Path(os.getcwd())
 RUN_ID = "2026-05-15T20;31;35.553357"
 SSP_RUN = SSP_PATH / "ssp_modeling" / "ssp_run_output" / f"sisepuede_results_sisepuede_run_{RUN_ID}"
 
-CB_CONFIG_PATH = SSP_PATH / "ssp_modeling" / "cost-benefits" / "cb_config_files" / "cb_config_params.xlsx"
+CB_CONFIG_PATH = SSP_PATH / "ssp_modeling" / "cost-benefits" / "cb_config_files" / "cb_config_params_indonesia.xlsx"
 CB_OUTPUT_PATH = SSP_PATH / "ssp_modeling" / "cost-benefits" / "output"
 CB_OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
