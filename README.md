@@ -74,7 +74,7 @@ The most relevant files are inside the `ssp_modeling` directory:
   - `ssp_run_output/` – Output folders created after executing a scenario which store the simulation output (gitignored).
   - `scenario_mapping/` – Spreadsheets with the mapping between SSP transformations and region-specific measures. This is where custom scenarios and transformation intensities are defined.
   - `transformations/` – CSVs and YAML files describing the transformations and strategies applied by the model.
-  - `output_postprocessing/` – Python post-processing modules (e.g. `intertemporal_decomposition.py`) and the `levers_and_jobs_table/` input files used to build the Tableau tables.
+  - `output_postprocessing/` – Reference data for post-processing: the drivers taxonomy and inventory crosswalk under `data/`, plus the `levers_and_jobs_table/` input files used to build the Tableau tables.
   - `tableau/` – Stores the Tableau workbook (`.twbx`) and, under `data/`, the post-processed CSVs loaded into the dashboards.
   - `cost-benefits/` – Scripts and config (`cb_config_files/`) to run the cost-benefit analysis on a specific SISEPUEDE run.
 
