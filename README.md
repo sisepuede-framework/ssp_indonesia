@@ -1,7 +1,7 @@
-# SSP_Morroco
+# SSP_Indonesia
 
 This repository contains notebooks and supporting files used to run the
-**SISEPUEDE** model on Morroco's mitigation scenarios. All modeling resources
+**SISEPUEDE** model on Indonesia's mitigation scenarios. All modeling resources
 reside in the `ssp_modeling` folder described below.
 
 
@@ -20,12 +20,12 @@ At the very top, you'll see a line like:
 name: sisepuede
 ```
 
-**Change `sisepuede` to your preferred environment name, usually related to the region you are working with** (e.g., `ssp-morroco`, `ssp-usa`, or whatever you'd like).
+**Change `sisepuede` to your preferred environment name, usually related to the region you are working with** (e.g., `ssp-indonesia`, `ssp-usa`, or whatever you'd like).
 
 For example:
 
 ```yaml
-name: ssp-morroco
+name: ssp-indonesia
 ```
 
 ### 3. **Create the Environment from the `.yml` File**
@@ -46,7 +46,7 @@ After installation, activate your new environment with:
 conda activate <your_env_name>
 ```
 
-*(Replace `<your_env_name>` with the name you specified in the `.yml` file, e.g., `ssp-morroco`)*
+*(Replace `<your_env_name>` with the name you specified in the `.yml` file, e.g., `ssp-indonesia`)*
 
 
 ### 5. **Done!**
@@ -69,45 +69,64 @@ Your environment is now ready to use, with all dependencies (including those ins
 ## Project Structure
 
 The most relevant files are inside the `ssp_modeling` directory:
-  - `config_files/` – YAML configuration files used by the notebooks.
+  - `notebooks/` – Jupyter notebooks that manage the modeling runs, plus `config_files/` (YAML configs) and `shared_scripts/` (the Python pipeline modules: calibration, post-processing, cost-benefits).
   - `input_data/` – Raw data for the model.
-  - `notebooks/` – Jupyter notebooks that manage the modeling runs.
-  - `ssp_run_output/` – Output folders created after executing a scenario which store the simulation output.
+  - `ssp_run_output/` – Output folders created after executing a scenario which store the simulation output (gitignored).
   - `scenario_mapping/` – Spreadsheets with the mapping between SSP transformations and region-specific measures. This is where custom scenarios and transformation intensities are defined.
   - `transformations/` – CSVs and YAML files describing the transformations and strategies applied by the model.
-  - `output_postprocessing/` – R scripts used to calibrate the model results and generate post-processed outputs. It also generates the levers and jobs tables.
-  - `tableau/` – Stores tableau files and also the post-processed data that is loaded into the dashboards.
-  - `cost-benefits/` – Contains scripts to run the cost-benefits analysis in specific SISEPUEDE simulations.
+  - `output_postprocessing/` – Python post-processing modules (e.g. `intertemporal_decomposition.py`) and the `levers_and_jobs_table/` input files used to build the Tableau tables.
+  - `tableau/` – Stores the Tableau workbook (`.twbx`) and, under `data/`, the post-processed CSVs loaded into the dashboards.
+  - `cost-benefits/` – Scripts and config (`cb_config_files/`) to run the cost-benefit analysis on a specific SISEPUEDE run.
 
 ## Steps to run the model and load data to Tableau for analysis
 
-All files and folders referenced here are inside the `ssp_modeling` directory.
+The whole pipeline is driven from the manager notebook
+`ssp_modeling/notebooks/indonesia_manager_wb.ipynb`, which calls the Python
+modules in `ssp_modeling/notebooks/shared_scripts/`. The old R post-processing
+scripts have been replaced by these modules. All paths below are inside the
+`ssp_modeling` directory unless noted.
 
-1. **Run the model in the notebook**
+1. **Configure the run**
+    * Edit `notebooks/config_files/config.yaml` — it sets `country_name`,
+      `country_code` (`IDN`), the calibrated SSP input file (`ssp_input_file_name`),
+      the transformation crosswalk (`ssp_transformation_cw`), and the model flags.
+    * Set up / adjust the transformation crosswalk spreadsheet in `scenario_mapping/`
+      and the strategy definitions in `transformations/`.
 
-   * Edit or create a configuration file in `config_files/`.
-   * Set up the transformations spreadsheet for custom Strategies and save it in `scenario_mapping/`.
-   * Open the manager notebook inside `notebooks/` and run the cells to execute the model.
+2. **(Optional) Calibrate the baseline against the BUR3 inventory**
+    * Run `notebooks/indonesia_calibration_wb.ipynb`. It diagnoses the baseline
+      against Indonesia's BUR3 inventory, applies per-subsector calibration knobs,
+      and exports the calibrated input CSV that `config.yaml`'s `ssp_input_file_name`
+      points to. This replaces the previous `ssp_emission_targets` step.
 
-2. **Post-process results**
-    * If you require emission targets, generate the targets file by following the instructions in the [ssp_emission_targets repository](https://github.com/sisepuede-framework/ssp_emission_targets).
-    * Run the `postprocessing_250820.r` script, editing it to point to the correct data.
-    * The script will generate three files; two of them are used in Tableau.
+3. **Run the model**
+    * Open `notebooks/indonesia_manager_wb.ipynb` and run the cells: it builds the
+      transformations and strategies, instantiates SISEPUEDE, projects the scenarios,
+      and exports the wide results into a run folder under `ssp_run_output/`.
 
-3. **Load emissions data into Tableau**
+4. **Generate the Tableau tables (post-processing)**
+    * In the same notebook, the "Post-processing pipeline — Tableau tables" section
+      calls `run_tableau_postprocessing(...)` from
+      `notebooks/shared_scripts/tableau_postprocessing.py`.
+    * It reads the run output directly (the `*WIDE_INPUTS_OUTPUTS.csv`,
+      `ATTRIBUTE_PRIMARY.csv`, `ATTRIBUTE_STRATEGY.csv`, and
+      `levers_implementation_<region>.csv` files) — no R script and no separate
+      levers/jobs step — and writes four CSVs to `tableau/data/`:
+        * `emissions_<region>.csv`
+        * `drivers_<region>.csv`
+        * `tableau_levers_table_complete.csv`
+        * `jobs_demand_<region>.csv`
 
-   * In the `tableau` directory, locate the Tableau dashboard file and the `data` folder.
-   * Copy the postprocessing output files into the `data` folder.
-   * Load the files beginning with `decomposed_emissions_` and `drivers_` into Tableau.
+5. **Run the cost-benefit analysis**
+    * In the manager notebook, the "Cost-benefit analysis" section calls
+      `run_cost_benefits(...)` from `notebooks/shared_scripts/cost_benefits_pipeline.py`,
+      using `cost-benefits/cb_config_files/cb_config_params_indonesia.xlsx` for the
+      cost factors and parameters. (The standalone `cost-benefits/cb.ipynb` is still
+      available for running it outside the manager notebook.)
 
-4. **Create Levers table and Jobs table**
-    * In the `output_postprocessing/`directory you can find the `levers_and_jobs_table/` folder which contains scripts and additional files to create the levers table and jobs table that need to be also loaded to Tableau.
-    * The levers table uses a csv file that is created in the region manager notebook (where the simulation was executed), this csv file is stored in the specific run folder in the `ssp_run_output/` directory.
-    * The jobs table uses a csv that is already in the `levers_and_jobs_table/` directory.
-
-5. **Run cost and benefits analysis**
-    * In the `cost-benefits/`directory you can fine a notebook called `cb.ipynb` which has the code to run the cost-benefit analysis in a specific SISEPUEDE run.
-    * The code uses a configuration excel that can be found in `cost-benefits/cb_config_file/cb_config_params.xlsx`. Here you can configure cost factors and additional parameters for the cost-benefit analysis.
+6. **Load the data into Tableau**
+    * All post-processed CSVs land in `tableau/data/`.
+    * Open the Tableau workbook in `tableau/` and point its data sources at those CSVs.
 
 
 
