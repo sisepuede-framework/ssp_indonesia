@@ -32,111 +32,9 @@ merge against an invent_historic_<iso>.csv.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
 
 import numpy as np
 import pandas as pd
-
-
-# ---------------------------------------------------------------------------
-# HP filter (port of R hp_filter_subsec; numpy-only, no statsmodels dependency)
-# ---------------------------------------------------------------------------
-
-def _hp_trend(values: np.ndarray, lambda_hp: float) -> np.ndarray:
-    """Hodrick-Prescott trend: solve (I + lambda * D'D) tau = y.
-
-    D is the (n-2) x n second-difference operator. Matches statsmodels'
-    hpfilter trend to machine precision, using only numpy.
-    """
-    y = np.asarray(values, dtype=float)
-    n = y.size
-    if n < 3:
-        return y.copy()
-    d = np.zeros((n - 2, n))
-    idx = np.arange(n - 2)
-    d[idx, idx] = 1.0
-    d[idx, idx + 1] = -2.0
-    d[idx, idx + 2] = 1.0
-    return np.linalg.solve(np.eye(n) + lambda_hp * (d.T @ d), y)
-
-
-def _hp_smooth_series(values: np.ndarray, lambda_hp: float) -> np.ndarray:
-    """Anchored, non-negative HP trend matching the R hp_filter_subsec output."""
-    if len(values) < 2:
-        return values.copy()
-    sm = np.maximum(_hp_trend(values, lambda_hp), 0.0)
-    sm = np.maximum(sm + (values[0] - sm[0]), 0.0)
-    sm[0] = values[0]
-    return sm
-
-
-def _apply_hp_to_subsec_gas(
-    df: pd.DataFrame,
-    subsec: str,
-    gases,
-    lambda_hp: float,
-    by_cols=("primary_id", "strategy_id", "design_id", "future_id", "Code"),
-    time_col: str = "Year",
-    value_col: str = "value",
-    cutoff_year: int | None = 2025,
-) -> pd.DataFrame:
-    """Apply HP smoothing per group for matching (subsector, gas) rows.
-
-    If `cutoff_year` is set, the HP filter is applied only to years
-    >= cutoff_year, anchored at cutoff_year so the smoothed series starts
-    exactly at the original value of that year (preserving continuity).
-    """
-    if isinstance(gases, str):
-        gases = [gases]
-    df["value_original"] = df["value"].astype(float)
-    mask = (
-        (df["subsector"] == subsec)
-        & (df["Gas"].isin(gases))
-        & df["strategy_id"].notna()
-    )
-    if not mask.any():
-        return df
-
-    sub = df.loc[mask]
-    smoothed = pd.Series(np.nan, index=sub.index, dtype=float, name="value_hp")
-    for _, idx in sub.groupby(list(by_cols), dropna=False).indices.items():
-        ordered = sub.iloc[idx].sort_values(time_col)
-        if cutoff_year is not None:
-            window = ordered.loc[ordered[time_col] >= cutoff_year]
-            if len(window) < 2:
-                continue
-            v = window[value_col].astype(float).to_numpy()
-            sm = _hp_smooth_series(v, lambda_hp)
-            smoothed.loc[window.index] = sm
-        else:
-            v = ordered[value_col].astype(float).to_numpy()
-            sm = _hp_smooth_series(v, lambda_hp)
-            smoothed.loc[ordered.index] = sm
-
-    df.loc[smoothed.index, "value_hp"] = smoothed.values
-    valid = smoothed.notna()
-    if valid.any():
-        df.loc[smoothed.index[valid], value_col] = smoothed[valid].values
-    not_smoothed = smoothed.isna()
-    if not_smoothed.any():
-        df.loc[smoothed.index[not_smoothed], "value_hp"] = (
-            df.loc[smoothed.index[not_smoothed], value_col].astype(float).values
-        )
-    return df
-
-
-# HP smoothing schedule. Labels match the IPCC subsectors in crosswalk_ssp.csv.
-# Purely cosmetic: smooths noisy projected trajectories for the listed
-# (subsector, gas) pairs. No-op for any label/gas not present in the data.
-# Disable entirely by passing hp_cutoff_year=None (or hp_schedule=[]).
-# Format: (subsector_label, [gases], lambda_hp)
-HP_SCHEDULE = [
-    ("3.A.1 - Enteric Fermentation",                       ["CH4"], 200),
-    ("3.A.2 - Manure Management",                          ["CH4"], 200),
-    ("3.C.4 - Direct N2O Emissions from managed soils",    ["N2O"], 200),
-    ("4.A - Solid Waste Disposal",                         ["CH4"], 400),
-    ("4.D - Wastewater Treatment and Discharge",           ["CH4"], 400),
-]
 
 
 # ---------------------------------------------------------------------------
@@ -151,19 +49,15 @@ def build_emissions_table(
     region: str,
     year_ref: int,
     out_path: Path,
-    hp_schedule: Iterable[tuple] = HP_SCHEDULE,
-    hp_cutoff_year: int | None = 2025,
     start_year: int | None = None,
 ) -> pd.DataFrame:
     """SISEPUEDE projected emissions mapped to the IPCC crosswalk taxonomy.
 
     Projection only: reads the raw WIDE_INPUTS_OUTPUTS.csv (no rescaling) and
-    does NOT overlay a national inventory. `start_year` trims the output to
-    years >= start_year (defaults to `year_ref`).
+    does NOT overlay a national inventory. Keeps every model year (2015-2050);
+    pass `start_year` to trim to years >= start_year. `year_ref` is unused here
+    (kept for API symmetry with build_drivers_table).
     """
-    if start_year is None:
-        start_year = year_ref
-
     # 1 — load crosswalk (co2e_* vars -> inventory class)
     mapping = pd.read_csv(crosswalk_path)
     mapping = mapping.drop(columns=[c for c in ("id", "ids", iso_code3) if c in mapping.columns])
@@ -225,25 +119,21 @@ def build_emissions_table(
     att_strategy = pd.read_csv(run_dir / "ATTRIBUTE_STRATEGY.csv")[["strategy_id", "strategy"]]
     data_new = data_new.merge(att_strategy, on="strategy_id", how="left")
 
-    # 8 — tag + keep projection from start_year onward
+    # 8 — tag (keep every model year unless start_year trims the front)
     data_new = data_new.drop(columns=["time_period"])
     data_new["Code"]   = iso_code3
     data_new["Contry"] = region
     data_new["source"] = "SISEPUEDE"
-    data_new = data_new[data_new["Year"] >= start_year].copy()
+    if start_year is not None:
+        data_new = data_new[data_new["Year"] >= start_year].copy()
     data_new = data_new.sort_values(
         ["strategy_id", "sector", "subsector", "Gas", "Year"], na_position="last"
     ).reset_index(drop=True)
 
-    # 9 — HP smoothing (cosmetic; preserves true pre-smoothing values in value_original)
-    value_original = data_new["value"].astype(float).to_numpy(copy=True)
-    data_new["value_hp"] = np.nan
-    if hp_schedule and hp_cutoff_year is not None:
-        for subsec, gases, lam in hp_schedule:
-            data_new = _apply_hp_to_subsec_gas(
-                data_new, subsec, gases, lam, cutoff_year=hp_cutoff_year,
-            )
-    data_new["value_original"] = value_original
+    # 9 — no smoothing: emissions are the raw model output. value_original and
+    #     value_hp are kept (the Tableau workbook references them) but equal value.
+    data_new["value_original"] = data_new["value"].astype(float)
+    data_new["value_hp"]       = data_new["value"].astype(float)
 
     # 10 — write CSV with the column order expected by Tableau
     final_cols = [
@@ -289,7 +179,6 @@ def build_drivers_table(
 
     long_df["Year"] = long_df["time_period"] + 2015
     long_df = long_df.drop(columns=["time_period"])
-    long_df = long_df[long_df["Year"] >= year_ref].copy()
 
     att_primary = pd.read_csv(run_dir / "ATTRIBUTE_PRIMARY.csv")
     long_df = long_df.merge(att_primary, on="primary_id", how="left")
@@ -454,7 +343,6 @@ def run_tableau_postprocessing(
     year_ref: int,
     wide_inputs_outputs_filename: str | None = None,
     out_dir: str | Path | None = None,
-    hp_cutoff_year: int | None = 2025,
     drivers_taxonomy_filename: str = "driver_variables_taxonomy_20251013.csv",
     levers_filename: str | None = None,
 ) -> dict:
@@ -468,13 +356,12 @@ def run_tableau_postprocessing(
     project_dir : repo root.
     region : region label inside the model output, e.g. "indonesia".
     iso_code3 : ISO 3-letter country code, e.g. "IDN".
-    year_ref : reference year; trims emissions/drivers to years >= it (e.g. 2019).
+    year_ref : reference year (e.g. 2019). Does NOT trim the output — every model
+        year (2015-2050) is kept; it only bounds the drivers GDP-history fallback.
     wide_inputs_outputs_filename : explicit filename of the WIDE_INPUTS_OUTPUTS
         file inside run_dir; if None, auto-detected.
     out_dir : where to write the Tableau CSVs (defaults to
         <project_dir>/ssp_modeling/tableau/data).
-    hp_cutoff_year : first year where HP smoothing kicks in (default 2025);
-        pass None to disable the emissions smoothing entirely.
     drivers_taxonomy_filename : filename of the drivers taxonomy file under
         output_postprocessing/data/.
     levers_filename : explicit name for the levers implementation CSV
@@ -513,7 +400,6 @@ def run_tableau_postprocessing(
         region         = region,
         year_ref       = year_ref,
         out_path       = out_dir / f"emissions_{region}.csv",
-        hp_cutoff_year = hp_cutoff_year,
     )
     drivers = build_drivers_table(
         run_dir                  = run_dir,
@@ -545,17 +431,3 @@ def run_tableau_postprocessing(
     }
 
 
-def _selfcheck() -> None:
-    """HP trend sanity: a straight line is its own trend; smoothing stays
-    non-negative and anchored to the first value."""
-    line = np.arange(10, 20, dtype=float)
-    assert np.allclose(_hp_trend(line, 1600), line, atol=1e-6), "HP trend must preserve a line"
-    noisy = np.array([5.0, 9.0, 2.0, 11.0, 3.0, 10.0])
-    sm = _hp_smooth_series(noisy, 100)
-    assert (sm >= 0).all(), "smoothed series must be non-negative"
-    assert sm[0] == noisy[0], "smoothed series must anchor to the first value"
-    print("tableau_postprocessing self-check OK")
-
-
-if __name__ == "__main__":
-    _selfcheck()
