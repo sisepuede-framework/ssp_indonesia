@@ -1,19 +1,33 @@
-name: ssp_indo_env
+name: ssp_indonesia
 channels:
   - conda-forge
 dependencies:
-  - python=3.11
-  - matplotlib=3.9.2
-  - xlsxwriter=3.1.1
-  - ipykernel=6.29.5
-  - setuptools>=60,<70
-  - ruamel.yaml
+  - python=3.13
   - pip
-  - setuptools>=60,<70 # otherwise install it directly on the terminal /opt/anaconda3/envs/ssp_libya_env_2/bin/python -m pip install "setuptools>=60,<70"
+
+  # sisepuede dependencies from conda-forge (geopandas/rioxarray need compiled GDAL/PROJ)
+  - geopy=2.5.0
+  - matplotlib=3.10.1
+  - munch=4.0.0
+  - numpy=2.5.3
+  - openpyxl=3.1.5
+  - pyxlsb=1.0.10
+  - pyyaml=6.0.3
+  - qpsolvers=4.13.0
+  - quadprog=0.1.13
+  - rioxarray=0.15.5
+  - scipy=1.18.1
+  - sqlalchemy=2.0.37
+
   - pip:
+
+     - geopandas==1.1.4
+     - pandas==3.0.5
+     - juliacall==0.9.35
+     - juliapkg==0.1.26
+     - xlsxwriter==3.2.9
       # SISEPUEDE — fork mantenido en sisepuede-framework (no se sincroniza con jcsyme/sisepuede).
-      - git+https://github.com/jcsyme/sisepuede/
-      - ssp-transformations-handler
+     - git+https://github.com/jcsyme/sisepuede.git@biomass_fix
+     - ssp-transformations-handler
       # Costs & Benefits (fork con GFR cost + `gas_recovery_savings`).
-      - git+https://github.com/sisepuede-framework/costs_benefits_ssp.git
-      - polars
+     - git+https://github.com/sisepuede-framework/costs_benefits_ssp.git

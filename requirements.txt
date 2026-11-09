@@ -5,5 +5,5 @@ setuptools>=60,<70
 ruamel.yaml
 polars
 ssp-transformations-handler
-git+https://github.com/jcsyme/sisepuede/
+git+https://github.com/jcsyme/sisepuede.git@biomass_fix
 git+https://github.com/sisepuede-framework/costs_benefits_ssp.git
