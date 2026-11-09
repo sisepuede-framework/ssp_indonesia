@@ -26,8 +26,9 @@ dependencies:
      - juliacall==0.9.35
      - juliapkg==0.1.26
      - xlsxwriter==3.2.9
-      # SISEPUEDE — fork mantenido en sisepuede-framework (no se sincroniza con jcsyme/sisepuede).
-     - git+https://github.com/jcsyme/sisepuede.git@biomass_fix
+      # SISEPUEDE 2.0 — biomass_fix pinneado al commit exacto probado en ssp_egypt
+      # (env ssp_biomass_env). NO usar @biomass_fix flotante: baja un tip más nuevo e incompatible.
+     - git+https://github.com/jcsyme/sisepuede.git@6f5f3476c30b6156ad27579ce1510a923f485d3f
      - ssp-transformations-handler
       # Costs & Benefits (fork con GFR cost + `gas_recovery_savings`).
      - git+https://github.com/sisepuede-framework/costs_benefits_ssp.git
