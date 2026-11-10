@@ -101,7 +101,7 @@ def build_emissions_table(
     # 6 — aggregate to inventory level
     data_new = (
         data_new.groupby(
-            ["primary_id", "time_period", "ID", "CSC.Sector", "CSC.Subsector"],
+            ["primary_id", "time_period", "ID", "CSC.Sector", "CSC.Subsector", "aggregation_category"],
             dropna=False,
             as_index=False,
         )["value"]
@@ -137,7 +137,7 @@ def build_emissions_table(
 
     # 10 — write CSV with the column order expected by Tableau
     final_cols = [
-        "strategy_id", "primary_id", "ID", "sector", "subsector", "value",
+        "strategy_id", "primary_id", "ID", "sector", "subsector", "aggregation_category", "value",
         "Year", "Gas", "design_id", "future_id", "strategy", "Code",
         "Contry", "source", "value_original", "value_hp",
     ]
@@ -410,13 +410,21 @@ def run_tableau_postprocessing(
         year_ref                 = year_ref,
         out_path                 = out_dir / f"drivers_{region}.csv",
     )
-    levers = build_levers_table(
-        run_dir                = run_dir,
-        descriptions_path      = descriptions_path,
-        stakeholder_codes_path = stakeholder_codes_path,
-        out_path               = out_dir / "tableau_levers_table_complete.csv",
-        levers_filename        = levers_filename,
-    )
+    # Skip the levers table if its input CSV was not produced (e.g. the
+    # LeversImplementationTable cells are commented out). Re-enables itself
+    # automatically once levers_implementation_<region>.csv exists again.
+    levers_path = run_dir / levers_filename
+    if levers_path.exists():
+        levers = build_levers_table(
+            run_dir                = run_dir,
+            descriptions_path      = descriptions_path,
+            stakeholder_codes_path = stakeholder_codes_path,
+            out_path               = out_dir / "tableau_levers_table_complete.csv",
+            levers_filename        = levers_filename,
+        )
+    else:
+        print(f"[levers]    skipped \u2014 {levers_path.name} not found in {run_dir}")
+        levers = None
     jobs = build_jobs_table(
         employment_path = employment_path,
         iso_code3       = iso_code3,

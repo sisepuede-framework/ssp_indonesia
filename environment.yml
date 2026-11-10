@@ -28,7 +28,7 @@ dependencies:
      - xlsxwriter==3.2.9
       # SISEPUEDE 2.0 — biomass_fix pinneado al commit exacto probado en ssp_egypt
       # (env ssp_biomass_env). NO usar @biomass_fix flotante: baja un tip más nuevo e incompatible.
-     - git+https://github.com/jcsyme/sisepuede.git@6f5f3476c30b6156ad27579ce1510a923f485d3f
+     - git+https://github.com/jcsyme/sisepuede.git@biomass_fix
      - ssp-transformations-handler
       # Costs & Benefits (fork con GFR cost + `gas_recovery_savings`).
      - git+https://github.com/sisepuede-framework/costs_benefits_ssp.git
