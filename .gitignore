@@ -179,8 +179,6 @@ ssp_modeling/ssp_run_output/
 # ignore the .vscode directory
 .vscode/
 
-# ignore tableau/data directory
-ssp_modeling/tableau/data/
 
 # Large reference data (download separately, not tracked)
 external_data/
